@@ -1,0 +1,8 @@
+{
+  "disk": [ "C:\\"],
+  "diskall" : 1,
+  "fextension": [ ".zip", ".rar", ".7z" ],
+  "expath": ["C:\\Windows"],
+  "maximumf": 30,
+  "fsizelimit": 1000
+}
