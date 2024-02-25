@@ -1,6 +1,6 @@
 # Copyfile-basedon-extension
 基于C++17制作的----以文件的扩展名来复制文件的工具
-### 配置文件
+### 配置文件-For Alldisk
 ```bash
 config.json
 {
@@ -10,6 +10,17 @@ config.json
     "expath": ["C:\\Windows"],//不遍历的目录
     "maximumf": 30,           //一个文件夹中最大文件夹/文件数量,如果大于则跳过这个目录
     "fsizelimit": 1000        //复制文件的大小限制
+} 
+```
+### 配置文件-For USB
+```bash
+config.json
+{
+    "fextension": [ ".zip", ".rar", ".7z" ],//复制文件的扩展名
+    "maximumf": 30,           //一个文件夹中最大文件夹/文件数量,如果大于则跳过这个目录
+    "fsizelimit": 1000,       //复制文件的大小限制
+    "waittime":20             //每次复制检索间隔时间 
+
 } 
 ```
 ## Contributors
