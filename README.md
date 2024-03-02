@@ -19,7 +19,8 @@ config.json
     "fextension": [ ".zip", ".rar", ".7z" ],//复制文件的扩展名
     "maximumf": 30,           //一个文件夹中最大文件夹/文件数量,如果大于则跳过这个目录
     "fsizelimit": 1000,       //复制文件的大小限制
-    "waittime":20             //每次复制检索间隔时间 
+    "waittime":20,            //每次复制检索间隔时间
+    "dontlist":"dontlistme.yx"//令牌:U盘根目录下若有这个文件就不对该U盘操作
 
 } 
 ```
