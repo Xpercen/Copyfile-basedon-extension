@@ -2,5 +2,6 @@
   "fextension": [".exe"],
   "maximumf": 30,
   "fsizelimit": 1000,
-  "waittime":20
+  "waittime":5,
+  "dontlist":"dontlistme.yx"
 }

